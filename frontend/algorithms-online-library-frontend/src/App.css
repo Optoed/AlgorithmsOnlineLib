@@ -1,0 +1,21 @@
+/* App.css */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+}
+
+.footer {
+  background-color: #f1f1f1;
+  padding: 10px;
+  text-align: center;
+}

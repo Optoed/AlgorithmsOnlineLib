@@ -1,0 +1,16 @@
+/*!* Предположим, что высота футера 50px *!*/
+/*body {*/
+/*    padding-bottom: 50px; !* Создаем отступ, равный высоте футера *!*/
+/*    margin: 0;*/
+/*}*/
+
+/*.footer {*/
+/*    position: fixed;*/
+/*    bottom: 0;*/
+/*    left: 0;*/
+/*    width: 100%;*/
+/*    background-color: #f1f1f1;*/
+/*    padding: 10px;*/
+/*    text-align: center;*/
+/*    border-top: 1px solid #e1e1e1;*/
+/*}*/
