@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Копируем go.mod и go.sum для установки зависимостей
 COPY go.mod go.sum ./
-
 # Устанавливаем зависимости
 RUN go mod tidy
 
@@ -14,7 +13,7 @@ RUN go mod tidy
 COPY . .
 
 # Собираем бинарный файл
-RUN go build -o main .
+RUN go build -o main ./cmd/main.go
 
 # Запуск контейнера
 CMD ["./main"]

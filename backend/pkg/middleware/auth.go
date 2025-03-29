@@ -3,6 +3,7 @@ package middleware
 import (
 	"AlgorithmsOnlineLibrary/internal/models"
 	"context"
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"strings"
@@ -32,7 +33,7 @@ func Authenticate(next http.Handler) http.Handler {
 			return JwtKey, nil
 		})
 		if err != nil {
-			if err == jwt.ErrSignatureInvalid {
+			if errors.Is(err, jwt.ErrSignatureInvalid) {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
