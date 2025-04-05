@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8081', // Замените на URL вашего бекенда
+    baseURL: 'http://localhost:8080', // Замените на URL вашего бекенда
     headers: {
         'Content-Type': 'application/json',
     },

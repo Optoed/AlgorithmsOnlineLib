@@ -19,7 +19,10 @@ func main() {
 
 	config.LoadConfig()
 
-	database.InitDB()
+	err := database.InitDB()
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer database.DB.Close()
 
 	router := mux.NewRouter()
@@ -37,6 +40,6 @@ func main() {
 	// Используем CORS middleware для всех запросов
 	handler := c.Handler(router)
 
-	log.Println("Server is running on port 8081")
-	log.Fatal(http.ListenAndServe(":8081", handler))
+	log.Println("Server is running on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }

@@ -2,23 +2,34 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
 	"log"
 	"os"
+	"time"
 )
 
 var DB *sql.DB
 
-func InitDB() {
+func InitDB() error {
 	var err error
 	DB_URL := os.Getenv("DB_URL")
-	DB, err = sql.Open("postgres", DB_URL)
-	if err != nil {
-		log.Fatal(err)
+
+	for range 5 {
+		DB, err = sql.Open("postgres", DB_URL)
+		if err == nil {
+			err = DB.Ping()
+			if err == nil {
+				break
+			}
+		}
+		time.Sleep(5 * time.Second)
 	}
 
-	err = DB.Ping()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to connect to database: %v", err)
 	}
+
+	log.Println("Database initialized successfully!")
+	return nil
 }
