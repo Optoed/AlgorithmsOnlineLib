@@ -31,7 +31,6 @@ const HomePage: React.FC = () => {
 
     return (
         <div className="container">
-            <h2 className="my-4">Algorithms</h2>
             <SearchForm setAlgorithms={setAlgorithms} />
             <ul className="list-group">
                 {algorithms.map((algorithm) => (
