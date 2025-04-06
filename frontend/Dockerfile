@@ -9,6 +9,7 @@ COPY algorithms-online-library-frontend/package*.json ./
 
 # Устанавливаем зависимости
 RUN npm install
+RUN npm install @monaco-editor/react
 
 # Копируем весь код проекта
 COPY algorithms-online-library-frontend/ ./
