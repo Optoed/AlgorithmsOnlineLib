@@ -25,6 +25,7 @@ func SetupRouters(router *mux.Router) {
 	protectedRoutes.HandleFunc("/algorithms", handlers.CreateAlgorithm).Methods("POST")
 	protectedRoutes.HandleFunc("/algorithms/{id}", handlers.UpdateAlgorithm).Methods("PUT")
 	protectedRoutes.HandleFunc("/algorithms/{id}", handlers.DeleteAlgorithm).Methods("DELETE")
+	protectedRoutes.HandleFunc("/algorithms/{id}", handlers.ChangeAlgorithmAvailability).Methods("PATCH")
 	protectedRoutes.HandleFunc("/algorithms/search", handlers.GetAlgorithmsByFilter).Methods("GET")
 	protectedRoutes.HandleFunc("/algorithms", handlers.GetAlgorithms).Methods("GET")
 	protectedRoutes.HandleFunc("/algorithms/{id}", handlers.GetAlgorithmByID).Methods("GET")

@@ -29,8 +29,11 @@ const AlgorithmPage: React.FC = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
+
+                console.log("data = ", response.data)
+
                 setAlgorithm(response.data);
-                setIsPrivate(response.data.isPrivate);
+                setIsPrivate(response.data.is_private);
                 setEditTitle(response.data.title); // Установим начальное значение для формы редактирования
                 setEditCode(response.data.code); // Установим начальное значение для формы редактирования
                 setEditTopic(response.data.topic); // Установим начальное значение для topic
@@ -79,22 +82,32 @@ const AlgorithmPage: React.FC = () => {
     const handleTogglePrivacy = async () => {
         if (algorithm) {
             try {
+                // Логируем текущее значение приватности
+                console.log(`Current privacy status: ${isPrivate}`);
+
                 const response = await api.patch(
                     `/api/algorithms/${id}`,
-                    { isPrivate: !isPrivate },
+                    { is_private: !isPrivate },
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
                     }
                 );
-                setAlgorithm(response.data);
+
+                // Логируем ответ от сервера
+                console.log('Response from server:', response);
+
+                // Обновляем состояние
                 setIsPrivate(!isPrivate);
             } catch (error) {
+                // Логируем подробности ошибки
                 console.error('Error updating privacy:', error);
+                alert('Error updating privacy');
             }
         }
     };
+
 
     const handleEdit = () => {
         setShowEditModal(true);

@@ -32,7 +32,7 @@ func main() {
 	// Создаем новый CORS middleware с настройками по умолчанию
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"}, // Разрешаем все origins (для разработки); лучше ограничить в продакшн
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	})

@@ -19,6 +19,7 @@ const HomePage: React.FC = () => {
 
                 if (token) {
                     const data = await fetchAlgorithms(token);
+                    console.log("data = ", data)
                     if (Array.isArray(data)) {
                         setAlgorithms(data);
                     } else {
@@ -73,7 +74,7 @@ const HomePage: React.FC = () => {
                 <SearchForm setAlgorithms={setAlgorithms} />
             </div>
 
-            {algorithms.length === 0 ? (
+            {(algorithms || []).length === 0 ? (
                 <div className="text-center py-5 bg-light rounded">
                     <h4 className="text-muted">No algorithms found</h4>
                     <p className="text-muted">Try changing your search criteria</p>

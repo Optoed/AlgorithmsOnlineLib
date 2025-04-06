@@ -10,7 +10,7 @@ export const fetchAlgorithms = async (token: any) => {
         });
         //console.log("response when fetching algorithms:", response);
         //console.log("response.data when fetching algorithms:", response.data);
-        return response.data;
+        return response.data || [];
     } catch (error) {
         console.error('Error fetching algorithms:', error);
         throw error;
@@ -24,7 +24,7 @@ export const fetchAlgorithmsByUserID = async (token: any, userID: any) => {
                 Authorization: `Bearer ${token}`
             }
         });
-        return response.data;
+        return response.data || [];
     } catch (error) {
         throw error
     }

@@ -8,6 +8,9 @@ export interface Algorithm {
     user_id: string;
 
     is_favorite: boolean;
+    is_private: boolean;
     created_at: Date;
     description: string;
+
+    rating: number;
 }
