@@ -127,7 +127,7 @@ const AddAlgorithmPage: React.FC = () => {
                             <div style={{ border: '1px solid #ddd', borderRadius: '4px', height: '400px' }}>
                                 <Editor
                                     height="100%"
-                                    language={programmingLanguage.toLowerCase() || 'cpp'}
+                                    language={programmingLanguage.toLowerCase() === 'C++' ? 'cpp' : programmingLanguage.toLowerCase()  || 'cpp'}
                                     value={code}
                                     onChange={(value: any) => setCode(value || '')}
                                     options={{

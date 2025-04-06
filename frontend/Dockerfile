@@ -10,6 +10,8 @@ COPY algorithms-online-library-frontend/package*.json ./
 # Устанавливаем зависимости
 RUN npm install
 RUN npm install @monaco-editor/react
+RUN npm install react-syntax-highlighter
+
 
 # Копируем весь код проекта
 COPY algorithms-online-library-frontend/ ./
