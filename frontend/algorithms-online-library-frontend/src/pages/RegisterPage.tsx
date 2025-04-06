@@ -12,54 +12,61 @@ const RegisterPage: React.FC = () => {
         e.preventDefault();
         try {
             const response = await api.post('/register', { username, password, email });
-            // Assuming successful registration, navigate to login page
             navigate('/login');
         } catch (error) {
             console.error('Registration error:', error);
-            // Handle error, show message, etc.
         }
     };
 
     return (
-        <div className="container mt-5">
-            <div className="row justify-content-center">
-                <div className="col-md-6">
-                    <div className="card">
-                        <div className="card-body">
-                            <h2 className="card-title text-center">Register Page</h2>
-                            <form onSubmit={handleSubmit}>
-                                <div className="form-group">
-                                    <label htmlFor="username">Username:</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        id="username"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="password">Password:</label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="email">Email:</label>
-                                    <input
-                                        type="email"
-                                        className="form-control"
-                                        id="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                    />
-                                </div>
-                                <button type="submit" className="btn btn-primary btn-block">Register</button>
-                            </form>
+        <div className="container d-flex justify-content-center align-items-center min-vh-100 bg-light">
+            <div className="col-md-6">
+                <div className="card shadow-lg rounded-4 border-0">
+                    <div className="card-body p-5">
+                        <h2 className="text-center mb-4 fw-bold text-primary">Create Account</h2>
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-3">
+                                <label htmlFor="username" className="form-label">Username</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    id="username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                    placeholder="Enter your username"
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <label htmlFor="email" className="form-label">Email</label>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    id="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    placeholder="you@example.com"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="password" className="form-label">Password</label>
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    id="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    placeholder="Create a strong password"
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-primary w-100 py-2">Register</button>
+                        </form>
+                        <div className="text-center mt-3">
+                            <small className="text-muted">Already have an account?</small>
+                            <br />
+                            <a href="/login" className="text-decoration-none">Login here</a>
                         </div>
                     </div>
                 </div>
