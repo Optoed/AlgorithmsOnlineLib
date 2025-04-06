@@ -24,65 +24,84 @@ const ResetPasswordPage: React.FC = () => {
                 'new-password': newPassword
             });
             console.log('Reset password response:', response);
-            // Handle the response as needed
             navigate('/login');
         } catch (error) {
             console.error('Reset password error:', error);
-            // Handle error, show message, etc.
         }
     };
 
     return (
-        <div className="container mt-5">
-            <h2 className="text-center mb-4">Reset Password</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label className="form-label">Username</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
+        <div className="container d-flex align-items-center justify-content-center min-vh-100 bg-light">
+            <div className="card shadow-lg rounded-4 p-5 border-0" style={{ maxWidth: '500px', width: '100%' }}>
+                <div className="card-body">
+                    <h2 className="text-center text-primary fw-bold mb-4">Reset Your Password</h2>
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-3">
+                            <label className="form-label">Username</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Your username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Email</label>
+                            <input
+                                type="email"
+                                className="form-control"
+                                placeholder="Email associated with your account"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Reset Token</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Enter the token from your email"
+                                value={token}
+                                onChange={(e) => setToken(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">New Password</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                placeholder="Choose a new password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="form-label">Repeat New Password</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                placeholder="Repeat the new password"
+                                value={repeatNewPassword}
+                                onChange={(e) => setRepeatNewPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="btn btn-primary w-100 py-2">
+                            Reset Password
+                        </button>
+                        <div className="text-center mt-3">
+                            <a href="/login" className="text-decoration-none text-muted">
+                                Back to login
+                            </a>
+                        </div>
+                    </form>
                 </div>
-                <div className="mb-3">
-                    <label className="form-label">Email</label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Token</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        value={token}
-                        onChange={(e) => setToken(e.target.value)}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">New Password</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Repeat New Password</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        value={repeatNewPassword}
-                        onChange={(e) => setRepeatNewPassword(e.target.value)}
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">Reset Password</button>
-            </form>
+            </div>
         </div>
     );
 };
