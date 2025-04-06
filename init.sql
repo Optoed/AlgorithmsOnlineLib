@@ -14,17 +14,24 @@ CREATE TABLE IF NOT EXISTS categories (
 
 CREATE TABLE IF NOT EXISTS algorithms (
                                           id SERIAL PRIMARY KEY,
-                                          title VARCHAR(100) NOT NULL,
-                                          description TEXT,
                                           code TEXT,
+                                          programming_language VARCHAR(50),
+                                          title VARCHAR(100) NOT NULL,
+                                          topic VARCHAR(100),
                                           user_id INTEGER REFERENCES users(id),
+
+                                          is_private  BOOLEAN DEFAULT FALSE,
+                                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                          description TEXT,
+
                                           category_id INTEGER REFERENCES categories(id),
                                           rating DOUBLE PRECISION DEFAULT 0,
-                                          approved BOOLEAN DEFAULT false,
-                                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                          topic VARCHAR(100),
-                                          programming_language VARCHAR(50)
+                                          approved BOOLEAN DEFAULT FALSE
 );
+
+-- ALTER TABLE algorithms
+--     ADD COLUMN IF NOT EXISTS is_private BOOLEAN DEFAULT FALSE;
+
 
 CREATE TABLE IF NOT EXISTS email_verification_tokens (
                                                          user_id INTEGER REFERENCES users(id),

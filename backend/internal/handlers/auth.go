@@ -7,10 +7,11 @@ import (
 	"AlgorithmsOnlineLibrary/pkg/database"
 	"AlgorithmsOnlineLibrary/pkg/middleware"
 	"encoding/json"
-	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -129,6 +130,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//log.Println("creds while login = ", creds)
+
 	var storedUser models.User
 	var confirmed bool = false
 	err = database.DB.QueryRow("SELECT id, username, password_hash, confirmed FROM users WHERE username=$1", creds.Username).
@@ -164,11 +167,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//http.SetCookie(w, &http.Cookie{
-	//	Name:    "token",
-	//	Value:   tokenString,
-	//	Expires: expirationTime,
-	//})
+	//log.Println("result data of login: ", tokenString, storedUser)
 
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "Login successful",
