@@ -52,6 +52,8 @@ func UpdateAlgorithm(w http.ResponseWriter, r *http.Request) {
 	var updateAlgorithm models.Algorithm
 	err := json.NewDecoder(r.Body).Decode(&updateAlgorithm)
 
+	//log.Println("updateAlgorithm : ", updateAlgorithm)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -83,6 +85,8 @@ func UpdateAlgorithm(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No rows were updated", http.StatusNotFound)
 		return
 	}
+
+	//log.Println("updating algo ends with success")
 
 	json.NewEncoder(w).Encode(updateAlgorithm)
 }

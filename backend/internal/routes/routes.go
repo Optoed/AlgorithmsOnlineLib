@@ -22,7 +22,7 @@ func SetupRouters(router *mux.Router) {
 	protectedRoutes.HandleFunc("/available-programming-languages", handlers.GetAvailableProgrammingLanguages).Methods("GET")
 
 	protectedRoutes.HandleFunc("/algorithms", handlers.CreateAlgorithm).Methods("POST")
-	protectedRoutes.HandleFunc("/algorithms/{id}", handlers.CreateAlgorithm).Methods("PUT")
+	protectedRoutes.HandleFunc("/algorithms/{id}", handlers.UpdateAlgorithm).Methods("PUT")
 
 	protectedRoutes.HandleFunc("/algorithms/search", handlers.GetAlgorithmsByFilter).Methods("GET")
 	protectedRoutes.HandleFunc("/algorithms", handlers.GetAlgorithms).Methods("GET")
