@@ -50,7 +50,7 @@ const AddAlgorithmPage: React.FC = () => {
 
             if (response.data.id) {
                 setMessage('Algorithm created successfully!');
-                setTimeout(() => navigate('/algorithms'), 1000);
+                setTimeout(() => navigate(`/algorithms/${response.data.id}`), 1000);
             }
         } catch (error) {
             setMessage('Error creating algorithm');
@@ -127,7 +127,7 @@ const AddAlgorithmPage: React.FC = () => {
                             <div style={{ border: '1px solid #ddd', borderRadius: '4px', height: '400px' }}>
                                 <Editor
                                     height="100%"
-                                    language={programmingLanguage.toLowerCase() === 'C++' ? 'cpp' : programmingLanguage.toLowerCase()  || 'cpp'}
+                                    language={programmingLanguage.toLowerCase() === 'c++' ? 'cpp' : programmingLanguage.toLowerCase()  || 'cpp'}
                                     value={code}
                                     onChange={(value: any) => setCode(value || '')}
                                     options={{
