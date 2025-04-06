@@ -91,6 +91,34 @@ func UpdateAlgorithm(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(updateAlgorithm)
 }
 
+func DeleteAlgorithm(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	userID := r.Context().Value("userID").(int)
+
+	//log.Printf("id = %v, userId = %v\n", id, userID)
+
+	result, err := database.DB.Exec(`DELETE FROM algorithms WHERE user_id = $1 AND id = $2`, userID, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if rowsAffected == 0 {
+		http.Error(w, "Algorithm not found or you do not have permission to delete it", http.StatusNotFound)
+		return
+	}
+
+	//log.Println("deleted!")
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func GetAlgorithms(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 

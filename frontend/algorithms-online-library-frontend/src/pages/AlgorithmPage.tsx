@@ -17,6 +17,7 @@ const AlgorithmPage: React.FC = () => {
     const [editCode, setEditCode] = useState('');
     const [editTopic, setEditTopic] = useState('');
     const [editProgrammingLanguage, setEditProgrammingLanguage] = useState('');
+    const [deleteMessage, setDeleteMessage] = useState<string | null>(null); // Состояние для сообщения после удаления
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
 
@@ -53,13 +54,23 @@ const AlgorithmPage: React.FC = () => {
     const handleDelete = async () => {
         if (algorithm) {
             try {
+                // Закрываем модальное окно сразу после клика
+                setShowConfirmDelete(false);
+
+                // Выполняем удаление алгоритма
                 await api.delete(`/api/algorithms/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                navigate('/algorithms');
+
+                // Показать сообщение об успешном удалении
+                setDeleteMessage('Successfully deleted!');
+
+                // Редиректим на список алгоритмов через 1.5 секунды
+                setTimeout(() => navigate('/my-algorithms'), 1500);
             } catch (error) {
+                setDeleteMessage('Error deleting algorithm.');
                 console.error('Error deleting algorithm:', error);
             }
         }
@@ -121,7 +132,7 @@ const AlgorithmPage: React.FC = () => {
     }
 
     return (
-        <div className="container d-flex justify-content-center mt-5">
+        <div className={`container d-flex justify-content-center mt-5 ${deleteMessage ? 'opacity-20' : ''}`}>
             <div className="card shadow rounded-4 p-4" style={{ maxWidth: '800px', width: '100%' }}>
                 <h2 className="mb-3 text-primary fw-bold">{algorithm.title}</h2>
                 <p className="mb-1">
@@ -193,6 +204,71 @@ const AlgorithmPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Delete Confirmation */}
+            {showConfirmDelete && (
+                <div className="modal show d-block" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirm Deletion</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={() => setShowConfirmDelete(false)}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>Are you sure you want to delete this algorithm?</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowConfirmDelete(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-danger"
+                                    onClick={handleDelete}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Success/Error Message */}
+            {deleteMessage && (
+                <div
+                    className="alert alert-success mt-3"
+                    role="alert"
+                    style={{
+                        position: 'fixed',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 1050,
+                        maxWidth: '600px',
+                        width: '100%',
+                        padding: '30px',
+                        textAlign: 'center',
+                        backgroundColor: '#d4edda',
+                        borderColor: '#c3e6cb',
+                        color: '#155724',
+                        fontSize: '1.5rem',
+                        fontWeight: 'bold',
+                        opacity: 1,
+                        transition: 'opacity 0.5s ease',
+                    }}
+                >
+                    {deleteMessage}
+                </div>
+            )}
+
             {/* Edit Modal */}
             {showEditModal && (
                 <div className="modal show d-block" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
@@ -232,7 +308,7 @@ const AlgorithmPage: React.FC = () => {
                                     value={editCode}
                                     onChange={(e) => setEditCode(e.target.value)}
                                     className="form-control"
-                                    rows={6}
+                                    rows={10}
                                     placeholder="Code"
                                 />
                             </div>
@@ -242,7 +318,7 @@ const AlgorithmPage: React.FC = () => {
                                     className="btn btn-secondary"
                                     onClick={() => setShowEditModal(false)}
                                 >
-                                    Close
+                                    Cancel
                                 </button>
                                 <button
                                     type="button"
