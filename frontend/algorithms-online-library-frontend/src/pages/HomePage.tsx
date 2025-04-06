@@ -70,7 +70,6 @@ const HomePage: React.FC = () => {
     return (
         <div className="container py-4">
             <div className="mb-4">
-                <h2 className="mb-4">Algorithms Library</h2>
                 <SearchForm setAlgorithms={setAlgorithms} />
             </div>
 
