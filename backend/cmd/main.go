@@ -1,10 +1,7 @@
 package main
 
 import (
-	"AlgorithmsOnlineLibrary/internal/handlers"
-	"AlgorithmsOnlineLibrary/internal/repositories"
 	"AlgorithmsOnlineLibrary/internal/routes"
-	"AlgorithmsOnlineLibrary/internal/services"
 	"AlgorithmsOnlineLibrary/pkg/config"
 	"AlgorithmsOnlineLibrary/pkg/database"
 	"github.com/gorilla/mux"
@@ -27,11 +24,6 @@ func main() {
 		log.Fatal(err)
 	}
 	defer database.DB.Close()
-
-	// repo, service, handler for User
-	userRepo := repositories.NewUserRepo(database.DB)
-	userService := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
 
 	router := mux.NewRouter()
 
