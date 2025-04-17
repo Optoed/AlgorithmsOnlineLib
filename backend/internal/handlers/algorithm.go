@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	_ "github.com/jmoiron/sqlx"
 	"net/http"
 	"strconv"
 )
@@ -274,6 +275,7 @@ func GetAlgorithmsByFilter(w http.ResponseWriter, r *http.Request) {
 		Title               string `json:"title"`
 		AlgorithmID         int    `json:"id"`
 		UserID              int    `json:"user_id"`
+		Username            string `json:"username"`
 		SortBy              string `json:"sort_by"`
 	}
 	var filters filter
@@ -397,4 +399,81 @@ func ChangeAlgorithmAvailability(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Availability changed successfully"})
+}
+
+// Favorite Algorithms
+
+func GetFavoriteAlgorithms(w http.ResponseWriter, r *http.Request) {
+	var myAlgorithms []models.Algorithm
+
+	userID, ok := r.Context().Value("userID").(int)
+	if !ok {
+		http.Error(w, "Invalid userID", http.StatusBadRequest)
+	}
+
+	rows, err := database.DB.Query(
+		`SELECT id, title, code, user_id, topic, programming_language, is_private, description
+				FROM algorithms
+				WHERE user_id = $1 AND is_favorite = TRUE`,
+		userID)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var algorithm models.Algorithm
+		err = rows.Scan(
+			&algorithm.ID,
+			&algorithm.Title,
+			&algorithm.Code,
+			&algorithm.UserID,
+			&algorithm.Topic,
+			&algorithm.ProgrammingLanguage,
+			&algorithm.IsPrivate,
+			&algorithm.Description,
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		if algorithm.IsPrivate && algorithm.UserID != userID {
+			algorithm.Code = "PRIVATE!"
+		}
+		myAlgorithms = append(myAlgorithms, algorithm)
+	}
+
+	json.NewEncoder(w).Encode(myAlgorithms)
+}
+
+func ChangeAlgorithmFavoriteStatus(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	userId := r.Context().Value("userID").(int)
+
+	result, err := database.DB.Exec(
+		`UPDATE algorithms
+				SET is_favorite = NOT is_favorite
+				WHERE user_id = $1 AND id = $2`,
+		userId,
+		id)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if rowsAffected == 0 {
+		http.Error(w, "Algorithm not found or not owned by the user", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "IsFavorite status changed successfully"})
 }

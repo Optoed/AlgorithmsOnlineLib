@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS algorithms (
                                           user_id INTEGER REFERENCES users(id),
 
                                           is_private  BOOLEAN DEFAULT FALSE,
+                                          is_favorite BOOLEAN DEFAULT FALSE,
                                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                           description TEXT,
 
@@ -28,10 +29,6 @@ CREATE TABLE IF NOT EXISTS algorithms (
                                           rating DOUBLE PRECISION DEFAULT 0,
                                           approved BOOLEAN DEFAULT FALSE
 );
-
--- ALTER TABLE algorithms
---     ADD COLUMN IF NOT EXISTS is_private BOOLEAN DEFAULT FALSE;
-
 
 CREATE TABLE IF NOT EXISTS email_verification_tokens (
                                                          user_id INTEGER REFERENCES users(id),
@@ -53,3 +50,6 @@ CREATE INDEX IF NOT EXISTS idx_algorithms_user_id ON algorithms(user_id);
 CREATE INDEX IF NOT EXISTS idx_algorithms_category_id ON algorithms(category_id);
 CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_user_id ON email_verification_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_algorithms_is_favorite ON algorithms(is_favorite);
+CREATE INDEX IF NOT EXISTS idx_algorithms_is_private ON algorithms(is_private);

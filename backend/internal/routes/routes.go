@@ -14,6 +14,7 @@ func SetupRouters(router *mux.Router) {
 	router.HandleFunc("/forgot-password", handlers.ForgotPassword).Methods("POST")
 	router.HandleFunc("/reset-password", handlers.ResetPassword).Methods("POST")
 
+	// protected routes
 	protectedRoutes := router.PathPrefix("/api").Subrouter()
 	protectedRoutes.Use(middleware.Authenticate)
 
@@ -30,4 +31,9 @@ func SetupRouters(router *mux.Router) {
 	protectedRoutes.HandleFunc("/algorithms", handlers.GetAlgorithms).Methods("GET")
 	protectedRoutes.HandleFunc("/algorithms/{id}", handlers.GetAlgorithmByID).Methods("GET")
 	protectedRoutes.HandleFunc("/algorithms-by-user/{id}", handlers.GetAlgorithmsByUserID).Methods("GET")
+
+	// favorites algorithms
+	protectedRoutes.HandleFunc("/algorithms/favorite", handlers.GetFavoriteAlgorithms).Methods("GET")
+	protectedRoutes.HandleFunc("/algorithms/favorite/{id}", handlers.ChangeAlgorithmFavoriteStatus).
+		Methods("PATCH")
 }
