@@ -3,18 +3,13 @@ package handlers
 import (
 	"AlgorithmsOnlineLibrary/internal/models"
 	"AlgorithmsOnlineLibrary/pkg/database"
-	"AlgorithmsOnlineLibrary/pkg/middleware"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
-	"strings"
-
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
 )
 
-// Handler to fetch programming languages
 func GetAvailableProgrammingLanguages(w http.ResponseWriter, r *http.Request) {
 	availableProgrammingLanguages := []string{"Go", "C++", "Python", "JavaScript",
 		"Rust", "C#", "Java", "PHP", "Ruby", "Kotlin", "Swift", "C", "TypeScript", "Lua",
@@ -31,7 +26,10 @@ func CreateAlgorithm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if (algorithm.Topic == "") || (algorithm.ProgrammingLanguage == "") || (algorithm.Title == "") || (algorithm.Code == "") {
+	if algorithm.Topic == "" ||
+		algorithm.ProgrammingLanguage == "" ||
+		algorithm.Title == "" ||
+		algorithm.Code == "" {
 		http.Error(w, "All fields are required", http.StatusBadRequest)
 		return
 	}
@@ -39,8 +37,16 @@ func CreateAlgorithm(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 	algorithm.UserID = userID
 
-	err = database.DB.QueryRow("INSERT INTO algorithms(title, code, user_id, topic, programming_language) VALUES($1, $2, $3, $4, $5) RETURNING id",
-		algorithm.Title, algorithm.Code, algorithm.UserID, algorithm.Topic, algorithm.ProgrammingLanguage).Scan(&algorithm.ID)
+	err = database.DB.QueryRow(
+		`INSERT INTO algorithms(title, code, user_id, topic, programming_language, description)
+			   VALUES($1, $2, $3, $4, $5, $6) RETURNING id`,
+		algorithm.Title,
+		algorithm.Code,
+		algorithm.UserID,
+		algorithm.Topic,
+		algorithm.ProgrammingLanguage,
+		algorithm.Description).
+		Scan(&algorithm.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -53,14 +59,15 @@ func UpdateAlgorithm(w http.ResponseWriter, r *http.Request) {
 	var updateAlgorithm models.Algorithm
 	err := json.NewDecoder(r.Body).Decode(&updateAlgorithm)
 
-	//log.Println("updateAlgorithm : ", updateAlgorithm)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if (updateAlgorithm.Topic == "") || (updateAlgorithm.ProgrammingLanguage == "") || (updateAlgorithm.Title == "") || (updateAlgorithm.Code == "") {
+	if updateAlgorithm.Topic == "" ||
+		updateAlgorithm.ProgrammingLanguage == "" ||
+		updateAlgorithm.Title == "" ||
+		updateAlgorithm.Code == "" {
 		http.Error(w, "All fields are required", http.StatusBadRequest)
 		return
 	}
@@ -68,8 +75,17 @@ func UpdateAlgorithm(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 	id := mux.Vars(r)["id"]
 
-	result, err := database.DB.Exec("UPDATE algorithms SET title = $1, code = $2, topic = $3, programming_language = $4 WHERE id = $5 AND user_id = $6",
-		updateAlgorithm.Title, updateAlgorithm.Code, updateAlgorithm.Topic, updateAlgorithm.ProgrammingLanguage, id, userID)
+	result, err := database.DB.Exec(
+		`UPDATE algorithms
+				SET title = $1, code = $2, topic = $3, programming_language = $4, description = $5
+                WHERE id = $6 AND user_id = $7`,
+		updateAlgorithm.Title,
+		updateAlgorithm.Code,
+		updateAlgorithm.Topic,
+		updateAlgorithm.ProgrammingLanguage,
+		updateAlgorithm.Description,
+		id,
+		userID)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -87,8 +103,6 @@ func UpdateAlgorithm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//log.Println("updating algo ends with success")
-
 	json.NewEncoder(w).Encode(updateAlgorithm)
 }
 
@@ -96,9 +110,10 @@ func DeleteAlgorithm(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	userID := r.Context().Value("userID").(int)
 
-	//log.Printf("id = %v, userId = %v\n", id, userID)
-
-	result, err := database.DB.Exec(`DELETE FROM algorithms WHERE user_id = $1 AND id = $2`, userID, id)
+	result, err := database.DB.Exec(
+		`DELETE FROM algorithms WHERE user_id = $1 AND id = $2`,
+		userID,
+		id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -115,46 +130,24 @@ func DeleteAlgorithm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//log.Println("deleted!")
-
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func GetAlgorithms(w http.ResponseWriter, r *http.Request) {
-	authHeader := r.Header.Get("Authorization")
+	// Fetch algorithms from database only if is_private = FALSE OR user_id = userID
+	thisUserID := r.Context().Value("userID").(int)
 
-	//log.Println("Authorization header:", authHeader)
+	algorithms, err := database.DB.Query(
+		`SELECT id, title, code, user_id, topic, programming_language, description
+				FROM algorithms
+				WHERE is_private = FALSE OR user_id = $1`,
+		thisUserID)
 
-	if authHeader == "" {
-		http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
-		return
-	}
-
-	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-	claims := &models.Claims{}
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return middleware.JwtKey, nil
-	})
-
-	//log.Println("claims", claims)
-	//log.Println("token", token)
-
-	if err != nil || !token.Valid {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		return
-	}
-
-	//log.Println("now we go to fetching algorithms")
-
-	// Fetch algorithms from database only if is_private == FALSE
-	algorithms, err := database.DB.Query("SELECT id, title, code, user_id, topic, programming_language FROM algorithms WHERE is_private = FALSE")
 	if err != nil {
 		http.Error(w, "Error fetching algorithms", http.StatusInternalServerError)
 		return
 	}
 	defer algorithms.Close()
-
-	//log.Println("algos = ", algorithms)
 
 	var rows []map[string]interface{}
 	for algorithms.Next() {
@@ -164,12 +157,14 @@ func GetAlgorithms(w http.ResponseWriter, r *http.Request) {
 		var userID int
 		var topic string
 		var programmingLanguage string
+		var description string
 
-		err = algorithms.Scan(&id, &title, &code, &userID, &topic, &programmingLanguage)
+		err = algorithms.Scan(&id, &title, &code, &userID, &topic, &programmingLanguage, &description)
 		if err != nil {
 			http.Error(w, "Error fetching algorithms", http.StatusInternalServerError)
 			return
 		}
+
 		rows = append(rows, map[string]interface{}{
 			"id":                   id,
 			"title":                title,
@@ -177,19 +172,15 @@ func GetAlgorithms(w http.ResponseWriter, r *http.Request) {
 			"user_id":              userID,
 			"topic":                topic,
 			"programming_language": programmingLanguage,
+			"description":          description,
 		})
 	}
-
-	//log.Println("algorithms after fetching", rows)
 
 	json.NewEncoder(w).Encode(rows)
 }
 
 func GetAlgorithmByID(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	userID := r.Context().Value("userID").(int)
-	idStr, ok := vars["id"]
-
+	idStr, ok := mux.Vars(r)["id"]
 	if !ok {
 		http.Error(w, "Missing ID parameter", http.StatusBadRequest)
 		return
@@ -201,10 +192,13 @@ func GetAlgorithmByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//log.Println("id of fetching algorithm by id: ", id)
 	var algorithm models.Algorithm
 
-	err = database.DB.QueryRow("SELECT id, title, code, user_id, topic, programming_language, is_private  FROM algorithms WHERE id = $1", id).
+	err = database.DB.QueryRow(
+		`SELECT id, title, code, user_id, topic, programming_language, is_private, description
+				FROM algorithms
+				WHERE id = $1`,
+		id).
 		Scan(&algorithm.ID,
 			&algorithm.Title,
 			&algorithm.Code,
@@ -212,18 +206,18 @@ func GetAlgorithmByID(w http.ResponseWriter, r *http.Request) {
 			&algorithm.Topic,
 			&algorithm.ProgrammingLanguage,
 			&algorithm.IsPrivate,
+			&algorithm.Description,
 		)
-
-	//log.Println("algorithms after fetching by id", algorithm)
-	//log.Println("error after fetching by id", err)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	userID := r.Context().Value("userID").(int)
+
 	if algorithm.IsPrivate && algorithm.UserID != userID {
-		algorithm.Code = "CODE IS PRIVATE"
+		algorithm.Code = "PRIVATE!"
 	}
 
 	json.NewEncoder(w).Encode(algorithm)
@@ -237,7 +231,11 @@ func GetAlgorithmsByUserID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid userID", http.StatusBadRequest)
 	}
 
-	rows, err := database.DB.Query("SELECT id, title, code, user_id, topic, programming_language FROM algorithms WHERE user_id = $1", userID)
+	rows, err := database.DB.Query(
+		`SELECT id, title, code, user_id, topic, programming_language, is_private, description
+				FROM algorithms
+				WHERE user_id = $1`,
+		userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -245,13 +243,23 @@ func GetAlgorithmsByUserID(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var algorithm models.Algorithm
-		err = rows.Scan(&algorithm.ID, &algorithm.Title, &algorithm.Code, &algorithm.UserID, &algorithm.Topic, &algorithm.ProgrammingLanguage, &algorithm.IsPrivate)
+		err = rows.Scan(
+			&algorithm.ID,
+			&algorithm.Title,
+			&algorithm.Code,
+			&algorithm.UserID,
+			&algorithm.Topic,
+			&algorithm.ProgrammingLanguage,
+			&algorithm.IsPrivate,
+			&algorithm.Description,
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+
 		// не нужно если всегда userID - это наш
 		if algorithm.IsPrivate && algorithm.UserID != userID {
-			algorithm.Code = "PRIVATE"
+			algorithm.Code = "PRIVATE!"
 		}
 		myAlgorithms = append(myAlgorithms, algorithm)
 	}
@@ -279,11 +287,14 @@ func GetAlgorithmsByFilter(w http.ResponseWriter, r *http.Request) {
 	filters.AlgorithmID, _ = strconv.Atoi(params.Get("id"))
 	filters.SortBy = params.Get("sort_by")
 
-	//log.Println("filters: ", filters)
+	thisUserID, _ := r.Context().Value("userID").(int)
 
-	query := "SELECT id, title, code, user_id, topic, programming_language FROM algorithms WHERE is_private = FALSE"
+	query := `SELECT id, title, code, user_id, topic, programming_language, description
+				FROM algorithms
+				WHERE is_private = FALSE OR user_id = $1`
 	var args []interface{}
-	var argIndex int = 1
+	args = append(args, thisUserID)
+	argIndex := 2
 
 	if filters.Topic != "" {
 		query += fmt.Sprintf(" AND topic ILIKE $%d", argIndex)
@@ -330,13 +341,25 @@ func GetAlgorithmsByFilter(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	var algorithms []models.Algorithm
+
 	for rows.Next() {
 		var algorithm models.Algorithm
-		err = rows.Scan(&algorithm.ID, &algorithm.Title, &algorithm.Code, &algorithm.UserID, &algorithm.Topic, &algorithm.ProgrammingLanguage)
+
+		err = rows.Scan(
+			&algorithm.ID,
+			&algorithm.Title,
+			&algorithm.Code,
+			&algorithm.UserID,
+			&algorithm.Topic,
+			&algorithm.ProgrammingLanguage,
+			&algorithm.Description,
+		)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 		algorithms = append(algorithms, algorithm)
 	}
 
@@ -349,7 +372,13 @@ func ChangeAlgorithmAvailability(w http.ResponseWriter, r *http.Request) {
 
 	//log.Println("get request, ", id, userId)
 
-	result, err := database.DB.Exec(`UPDATE algorithms SET is_private = NOT is_private WHERE user_id = $1 AND id = $2`, userId, id)
+	result, err := database.DB.Exec(
+		`UPDATE algorithms
+				SET is_private = NOT is_private
+				WHERE user_id = $1 AND id = $2`,
+		userId,
+		id)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -365,8 +394,6 @@ func ChangeAlgorithmAvailability(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Algorithm not found or not owned by the user", http.StatusNotFound)
 		return
 	}
-
-	//log.Printf("Algorithm %s availability changed by user %d", id, userId)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Availability changed successfully"})

@@ -26,8 +26,8 @@ func SendVerificationEmail(toEmail, username, verificationToken string) error {
 
 	appURL := os.Getenv("APP_URL")
 	verificationURL := fmt.Sprintf("%s/verify-email?token=%s", appURL, verificationToken)
-	emailBody := fmt.Sprintf("Dear %s,\n\nTo verify your email, please visit the following link:\n%s"+
-		"\n\n\nIf this is not your nickname, please do NOT follow this link, otherwise you will register another user who specified your email address.",
+	emailBody := fmt.Sprintf("Dear %s,\n\nTo verify your email, please visit the following adress:\n%s"+
+		"\n\n\nIf this is not your nickname, please do NOT follow this adress.",
 		username, verificationURL)
 	m.SetBody("text/plain", emailBody)
 
@@ -60,8 +60,13 @@ func SendResetPasswordEmail(toEmail, username, verificationToken string) error {
 
 	log.Println(username)
 
-	emailBody := fmt.Sprintf("Dear " + username + ",\n\nTo reset your password, please copy the following token and paste it into the app:\n" + verificationToken +
-		"\n\n\nIf this is not your nickname, please do NOT follow this link.")
+	emailBody := fmt.Sprintf(
+		"Dear " +
+			username +
+			",\n\nTo reset your password, please copy the following token and paste it into the app:\n" +
+			verificationToken +
+			"\n\n\nIf this is not your nickname, please do NOT follow this adress.",
+	)
 	m.SetBody("text/plain", emailBody)
 
 	d := gomail.NewDialer(smtpHost, smtpPort, from, password)
