@@ -477,3 +477,52 @@ func ChangeAlgorithmFavoriteStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "IsFavorite status changed successfully"})
 }
+
+// Rate
+
+func RateAlgorithm(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	rating, _ := strconv.ParseFloat(mux.Vars(r)["rating"], 64)
+	userId := r.Context().Value("userID").(int)
+
+	var ratingResponse struct {
+		rating     float64 `db:"raring" json:"rating"`
+		countRated int     `db"count_rated" json:"count_rated"`
+	}
+
+	_ = database.DB.QueryRow(
+		`SELECT rating, count_rated FROM algorithms
+				WHERE id = $1 AND user_id = $2`,
+		id,
+		userId).
+		Scan(&ratingResponse.rating, &ratingResponse.countRated)
+
+	newAvgRating := (ratingResponse.rating*float64(ratingResponse.countRated) + rating) / float64(ratingResponse.countRated+1)
+
+	result, err := database.DB.Exec(
+		`UPDATE algorithms
+				SET rating = $1, count_rated = count_rated + 1
+				WHERE user_id = $2 AND id = $3`,
+		newAvgRating,
+		userId,
+		id)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if rowsAffected == 0 {
+		http.Error(w, "Algorithm not found or not owned by the user", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "IsFavorite status changed successfully"})
+}

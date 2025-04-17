@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS algorithms (
                                           description TEXT,
 
                                           category_id INTEGER REFERENCES categories(id),
-                                          rating DOUBLE PRECISION DEFAULT 0,
+                                          rating DOUBLE PRECISION DEFAULT 0.0,
+                                          count_rated INTEGER DEFAULT 0,
                                           approved BOOLEAN DEFAULT FALSE
 );
 

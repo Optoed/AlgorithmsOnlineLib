@@ -36,4 +36,7 @@ func SetupRouters(router *mux.Router) {
 	protectedRoutes.HandleFunc("/algorithms/favorite", handlers.GetFavoriteAlgorithms).Methods("GET")
 	protectedRoutes.HandleFunc("/algorithms/favorite/{id}", handlers.ChangeAlgorithmFavoriteStatus).
 		Methods("PATCH")
+
+	// rate algorithm
+	protectedRoutes.HandleFunc("/algorithms/rate/{id}", handlers.RateAlgorithm).Methods("POST")
 }
