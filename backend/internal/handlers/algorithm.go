@@ -487,7 +487,7 @@ func RateAlgorithm(w http.ResponseWriter, r *http.Request) {
 
 	var ratingResponse struct {
 		rating     float64 `db:"raring" json:"rating"`
-		countRated int     `db"count_rated" json:"count_rated"`
+		countRated int     `db:"count_rated" json:"count_rated"`
 	}
 
 	_ = database.DB.QueryRow(
