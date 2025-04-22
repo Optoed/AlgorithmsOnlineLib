@@ -31,6 +31,17 @@ CREATE TABLE IF NOT EXISTS algorithms (
                                           approved BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE IF NOT EXISTS reviews (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    algorithm_id INTEGER REFERENCES algorithms(id),
+    rating DOUBLE PRECISION CHECK ( rating >= 1.0 AND rating <= 10.0) DEFAULT NULL,
+    review_text TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT NULL
+    -- TODO сделай уникальным (user_id, algorithm_id)
+);
+
 CREATE TABLE IF NOT EXISTS email_verification_tokens (
                                                          user_id INTEGER REFERENCES users(id),
                                                          token VARCHAR(32) PRIMARY KEY,

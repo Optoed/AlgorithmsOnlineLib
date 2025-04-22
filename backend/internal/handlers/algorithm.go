@@ -478,12 +478,14 @@ func ChangeAlgorithmFavoriteStatus(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "IsFavorite status changed successfully"})
 }
 
-// Rate
+// Rate TODO а нужен ли отдельный?
 
 func RateAlgorithm(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	rating, _ := strconv.ParseFloat(mux.Vars(r)["rating"], 64)
 	userId := r.Context().Value("userID").(int)
+
+	// TODO нужно проверить что алгоритм еще не был оценен конкретным пользователем
 
 	var ratingResponse struct {
 		rating     float64 `db:"raring" json:"rating"`
@@ -525,4 +527,52 @@ func RateAlgorithm(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "IsFavorite status changed successfully"})
+}
+
+// REVIEW
+
+func AddReview(w http.ResponseWriter, r *http.Request) {
+	var review models.Review
+	err := json.NewDecoder(r.Body).Decode(&review)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if review.Rating != nil && (*review.Rating < 1.0 || *review.Rating > 10.0) {
+		http.Error(w, "Rating must be NULL or between 1.0 AND 10.0", http.StatusBadRequest)
+		return
+	}
+
+	userID := r.Context().Value("userID").(int)
+	review.UserID = userID
+
+	_, err = database.DB.Exec(
+		`INSERT INTO reviews (user_id, algorithm_id, rating, review_text)
+			VALUES ($1, $2, $3, $4)`,
+		review.UserID, review.AlgorithmID, review.Rating, review.ReviewText)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError) // TODO или StatusBadRequest
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "Added Review successfully"})
+}
+
+func DeleteReview(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdateReview(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func GetReviewsByAlgorithmID(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func GetReviewByAlgorithmIDandUserID(w http.ResponseWriter, r *http.Request) {
+
 }

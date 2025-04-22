@@ -37,6 +37,15 @@ func SetupRouters(router *mux.Router) {
 	protectedRoutes.HandleFunc("/algorithms/favorite/{id}", handlers.ChangeAlgorithmFavoriteStatus).
 		Methods("PATCH")
 
-	// rate algorithm
+	// rate algorithm TODO а нужен ли?
 	protectedRoutes.HandleFunc("/algorithms/rate/{id}", handlers.RateAlgorithm).Methods("POST")
+
+	// add / update / delete / get review for algorithm
+	protectedRoutes.HandleFunc("/algorithms/review/{id}", handlers.AddReview).Methods("POST")
+	protectedRoutes.HandleFunc("/algorithms/review/{id}", handlers.UpdateReview).Methods("UPDATE")
+	protectedRoutes.HandleFunc("/algorithms/review/{id}", handlers.DeleteReview).Methods("DELETE")
+	protectedRoutes.HandleFunc("/algorithms/review/{algorithm_id}",
+		handlers.GetReviewsByAlgorithmID).Methods("GET")
+	protectedRoutes.HandleFunc("/algorithms/review/{algorithm_id}/{user_id}",
+		handlers.GetReviewByAlgorithmIDandUserID).Methods("GET")
 }
