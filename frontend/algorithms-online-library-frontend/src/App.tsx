@@ -1,6 +1,6 @@
 // src/App.tsx
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -11,22 +11,33 @@ import MyAlgorithmsPage from './pages/MyAlgorithmsPage';
 import AddAlgorithmPage from "./pages/AddAlgorithmPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
-
 const App: React.FC = () => {
+    // Проверяем, есть ли токен (например, в localStorage)
+    const isAuthenticated = !!localStorage.getItem('authToken'); // или из Redux/Context
+
     return (
         <Router>
             <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                minHeight: '100vh' // Занимаем всю высоту viewport
+                minHeight: '100vh'
             }}>
                 <Header />
                 <main style={{
-                    flex: '1 0 auto', // Растягиваем основной контент
-                    padding: '20px 0' // Добавляем отступы
+                    flex: '1 0 auto',
+                    padding: '20px 0'
                 }}>
                     <Routes>
-                        <Route path="/" element={<HomePage />} />
+                        {/* Автоматический редирект в зависимости от авторизации */}
+                        <Route
+                            path="/"
+                            element={isAuthenticated ? (
+                                <Navigate to="/home" replace />
+                            ) : (
+                                <Navigate to="/login" replace />
+                            )}
+                        />
+                        <Route path="/home" element={<HomePage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/algorithms" element={<AlgorithmPage />} />

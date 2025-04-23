@@ -58,7 +58,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if existsConfirmedEmail {
-		http.Error(w, "User with this email already exists", http.StatusBadRequest)
+		http.Error(w, "Email already exists", http.StatusBadRequest)
 		return
 	}
 
