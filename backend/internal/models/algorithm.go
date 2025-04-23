@@ -15,5 +15,6 @@ type Algorithm struct {
 	CreatedAt   time.Time `json:"created_at"`
 	Description string    `json:"description"`
 
-	Rating float64 `json:"rating"`
+	Rating     float64 `json:"rating"`
+	CountRated int     `json:"count_rated"`
 }
