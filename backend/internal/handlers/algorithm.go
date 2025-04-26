@@ -3,10 +3,12 @@ package handlers
 import (
 	"AlgorithmsOnlineLibrary/internal/models"
 	"AlgorithmsOnlineLibrary/pkg/database"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	_ "github.com/jmoiron/sqlx"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -135,16 +137,18 @@ func DeleteAlgorithm(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAlgorithms(w http.ResponseWriter, r *http.Request) {
-	// Fetch algorithms from database only if is_private = FALSE OR user_id = userID
 	thisUserID := r.Context().Value("userID").(int)
+
+	log.Println("thisUserId = ", thisUserID)
 
 	algorithms, err := database.DB.Query(
 		`SELECT id, title, code, user_id, topic, programming_language, description
-				FROM algorithms
-				WHERE is_private = FALSE OR user_id = $1`,
+         FROM algorithms
+         WHERE is_private = FALSE OR user_id = $1`,
 		thisUserID)
 
 	if err != nil {
+		log.Println("Database query error:", err)
 		http.Error(w, "Error fetching algorithms", http.StatusInternalServerError)
 		return
 	}
@@ -158,26 +162,45 @@ func GetAlgorithms(w http.ResponseWriter, r *http.Request) {
 		var userID int
 		var topic string
 		var programmingLanguage string
-		var description string
+		var description sql.NullString // Изменено на sql.NullString
 
 		err = algorithms.Scan(&id, &title, &code, &userID, &topic, &programmingLanguage, &description)
 		if err != nil {
-			http.Error(w, "Error fetching algorithms", http.StatusInternalServerError)
+			log.Println("Row scan error:", err)
+			http.Error(w, "Error scanning algorithm data", http.StatusInternalServerError)
 			return
 		}
 
-		rows = append(rows, map[string]interface{}{
+		row := map[string]interface{}{
 			"id":                   id,
 			"title":                title,
 			"code":                 code,
 			"user_id":              userID,
 			"topic":                topic,
 			"programming_language": programmingLanguage,
-			"description":          description,
-		})
+		}
+
+		// Добавляем description только если он не NULL
+		if description.Valid {
+			row["description"] = description.String
+		} else {
+			row["description"] = nil // или пустую строку ""
+		}
+
+		rows = append(rows, row)
 	}
 
-	json.NewEncoder(w).Encode(rows)
+	if err = algorithms.Err(); err != nil {
+		log.Println("Rows iteration error:", err)
+		http.Error(w, "Error processing algorithms", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		log.Println("JSON encoding error:", err)
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
 }
 
 func GetAlgorithmByID(w http.ResponseWriter, r *http.Request) {
@@ -293,7 +316,7 @@ func GetAlgorithmsByFilter(w http.ResponseWriter, r *http.Request) {
 
 	query := `SELECT id, title, code, user_id, topic, programming_language, description
 				FROM algorithms
-				WHERE is_private = FALSE OR user_id = $1`
+				WHERE (is_private = FALSE OR user_id = $1)`
 	var args []interface{}
 	args = append(args, thisUserID)
 	argIndex := 2
