@@ -9,6 +9,7 @@ const AddAlgorithmPage: React.FC = () => {
     const [programmingLanguage, setProgrammingLanguage] = useState('');
     const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
     const [code, setCode] = useState('// Write your code here\n');
+    const [description, setDescription] = useState(''); // Добавляем состояние для описания
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
@@ -33,7 +34,7 @@ const AddAlgorithmPage: React.FC = () => {
         e.preventDefault();
 
         if (!title || !topic || !programmingLanguage || !code) {
-            setMessage('All fields are required');
+            setMessage('All required fields are missing');
             return;
         }
 
@@ -43,7 +44,8 @@ const AddAlgorithmPage: React.FC = () => {
                 title,
                 topic,
                 programming_language: programmingLanguage,
-                code
+                code,
+                description // Добавляем описание в запрос
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -120,6 +122,18 @@ const AddAlgorithmPage: React.FC = () => {
                                     <option key={lang} value={lang}>{lang}</option>
                                 ))}
                             </select>
+                        </div>
+
+                        {/* Добавляем поле для описания */}
+                        <div className="mb-3">
+                            <label className="form-label">Description</label>
+                            <textarea
+                                className="form-control"
+                                placeholder="Algorithm description (optional)"
+                                rows={3}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
                         </div>
 
                         <div className="mb-4">
