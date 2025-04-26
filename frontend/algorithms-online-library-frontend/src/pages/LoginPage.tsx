@@ -17,6 +17,8 @@ const LoginPage: React.FC = () => {
             localStorage.setItem('userID', userID);
             navigate('/');
         } catch (error) {
+            // @ts-ignore
+            alert(error.response.data)
             console.error('Login error:', error);
         }
     };
