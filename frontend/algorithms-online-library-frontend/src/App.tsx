@@ -26,6 +26,11 @@ const App: React.FC = () => {
         setIsAuthenticated(false);
     };
 
+    const hasToken = (): boolean => {
+        const token = localStorage.getItem('token');
+        return !!token
+    }
+
     return (
         <Router>
             <div style={{
@@ -33,7 +38,7 @@ const App: React.FC = () => {
                 flexDirection: 'column',
                 minHeight: '100vh'
             }}>
-                <Header isLoggedIn={isAuthenticated} onLogout={handleLogout}/>
+                <Header/>
                 <main style={{
                     flex: '1 0 auto',
                     padding: '20px 0'
@@ -42,20 +47,59 @@ const App: React.FC = () => {
                         {/* Автоматический редирект в зависимости от авторизации */}
                         <Route
                             path="/"
-                            element={isAuthenticated ? (
+                            element={ hasToken() ? (
                                 <Navigate to="/home" replace />
                             ) : (
                                 <Navigate to="/login" replace />
                             )}
                         />
-                        <Route path="/home" element={<HomePage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
-                        <Route path="/algorithms" element={<AlgorithmPage />} />
-                        <Route path="/algorithms/:id" element={<AlgorithmPage />} />
-                        <Route path="/my-algorithms" element={<MyAlgorithmsPage />} />
-                        <Route path="/add-algorithm" element={<AddAlgorithmPage />} />
                         <Route path="/reset-password" element={<ResetPasswordPage />} />
+                        {/*<Route path="/favorite-algorithms/" element={<FavoriteAlgorithmsPage />} />*/}
+
+
+                        {/* Защищенные маршруты */}
+                        <Route
+                            path="/home"
+                            element={hasToken() ? (
+                                <HomePage />
+                            ) : (
+                                <Navigate to="/login" replace />
+                            )}
+                        />
+                        <Route
+                            path="/algorithms"
+                            element={hasToken() ? (
+                                <AlgorithmPage />
+                            ) : (
+                                <Navigate to="/login" replace />
+                            )}
+                        />
+                        <Route
+                            path="/algorithms/:id"
+                            element={hasToken() ? (
+                                <AlgorithmPage />
+                            ) : (
+                                <Navigate to="/login" replace />
+                            )}
+                        />
+                        <Route
+                            path="/my-algorithms"
+                            element={hasToken() ? (
+                                <MyAlgorithmsPage />
+                            ) : (
+                                <Navigate to="/login" replace />
+                            )}
+                        />
+                        <Route
+                            path="/add-algorithm"
+                            element={hasToken() ? (
+                                <AddAlgorithmPage />
+                            ) : (
+                                <Navigate to="/login" replace />
+                            )}
+                        />
                     </Routes>
                 </main>
                 <Footer />
