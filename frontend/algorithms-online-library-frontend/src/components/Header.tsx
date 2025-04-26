@@ -27,19 +27,7 @@ const Header: React.FC = () => {
                             <li className="nav-item mx-2">
                                 <Link className="nav-link px-3 py-2 rounded" to="/">
                                     <i className="bi bi-house-door me-2"></i>
-                                    Home
-                                </Link>
-                            </li>
-                            <li className="nav-item mx-2">
-                                <Link className="nav-link px-3 py-2 rounded" to="/login">
-                                    <i className="bi bi-box-arrow-in-right me-2"></i>
-                                    Login
-                                </Link>
-                            </li>
-                            <li className="nav-item mx-2">
-                                <Link className="nav-link px-3 py-2 rounded" to="/register">
-                                    <i className="bi bi-person-plus me-2"></i>
-                                    Register
+                                    Search
                                 </Link>
                             </li>
                             <li className="nav-item mx-2">
@@ -52,6 +40,25 @@ const Header: React.FC = () => {
                                 <Link className="nav-link px-3 py-2 rounded" to="/add-algorithm">
                                     <i className="bi bi-plus-circle me-2"></i>
                                     Add Algorithm
+                                </Link>
+                            </li>
+                            {/* разделитель */}
+                            <li className="nav-item mx-2">
+                                <div className="px-3 py-2 rounded">
+                                    |
+                                </div>
+                            </li>
+
+                            <li className="nav-item mx-2">
+                                <Link className="nav-link px-3 py-2 rounded" to="/login">
+                                    <i className="bi bi-box-arrow-in-right me-2"></i>
+                                    Login
+                                </Link>
+                            </li>
+                            <li className="nav-item mx-2">
+                                <Link className="nav-link px-3 py-2 rounded" to="/register">
+                                    <i className="bi bi-person-plus me-2"></i>
+                                    Register
                                 </Link>
                             </li>
                         </ul>

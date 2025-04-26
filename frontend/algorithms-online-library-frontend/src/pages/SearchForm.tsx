@@ -31,19 +31,25 @@ const SearchForm: React.FC<SearchFormProps> = ({ setAlgorithms }) => {
 
     const handleSearch = async () => {
         try {
+            const params = {
+                title: title,
+                topic: topic,
+                programming_language: programmingLanguage,
+                user_id: userID,
+                id: algorithmID,
+                sort_by: sortBy,
+            }
+
+            console.log("search params = ", params)
+
             const response = await api.get('/api/algorithms/search', {
-                params: {
-                    title,
-                    topic,
-                    programming_language: programmingLanguage,
-                    user_id: userID,
-                    id: algorithmID,
-                    sort_by: sortBy,
-                },
+                params: params,
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
+
+            console.log("search response = ", response.data)
 
             setAlgorithms(response.data);
         } catch (error) {

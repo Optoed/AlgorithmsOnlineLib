@@ -17,6 +17,7 @@ const AlgorithmPage: React.FC = () => {
     const [editCode, setEditCode] = useState('');
     const [editTopic, setEditTopic] = useState('');
     const [editProgrammingLanguage, setEditProgrammingLanguage] = useState('');
+    const [editDescription, setEditDescription] = useState(''); // Добавляем состояние для описания
     const [deleteMessage, setDeleteMessage] = useState<string | null>(null); // Состояние для сообщения после удаления
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
@@ -38,6 +39,7 @@ const AlgorithmPage: React.FC = () => {
                 setEditCode(response.data.code); // Установим начальное значение для формы редактирования
                 setEditTopic(response.data.topic); // Установим начальное значение для topic
                 setEditProgrammingLanguage(response.data.programming_language); // Установим начальное значение для programming_language
+                setEditDescription(response.data.description || ''); // Устанавливаем описание
             } catch (error) {
                 console.error('Error fetching algorithm:', error);
             }
@@ -125,6 +127,7 @@ const AlgorithmPage: React.FC = () => {
                 code: editCode,
                 topic: editTopic,
                 programming_language: editProgrammingLanguage,
+                description: editDescription, // Добавляем описание
             };
 
             const response = await api.put(`/api/algorithms/${id}`, updatedAlgorithm, {
@@ -201,6 +204,17 @@ const AlgorithmPage: React.FC = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* Добавляем отображение описания */}
+                {algorithm.description && (
+                    <div className="mb-3">
+                        <h5 className="mb-2">Description</h5>
+                        <div className="p-3 bg-light rounded-3">
+                            {algorithm.description}
+                        </div>
+                    </div>
+                )}
+
                 <h5 className="m-0">Code</h5>
                 <div className="position-relative mb-3">
                     <SyntaxHighlighter
@@ -215,6 +229,8 @@ const AlgorithmPage: React.FC = () => {
                         {algorithm.code}
                     </SyntaxHighlighter>
                 </div>
+
+
             </div>
 
             {/* Delete Confirmation */}
@@ -316,6 +332,14 @@ const AlgorithmPage: React.FC = () => {
                                     onChange={(e) => setEditProgrammingLanguage(e.target.value)}
                                     className="form-control mb-3"
                                     placeholder="Programming Language"
+                                />
+                                <textarea
+                                    id="description"
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    className="form-control mb-3"
+                                    rows={3}
+                                    placeholder="Algorithm description"
                                 />
                                 <textarea
                                     value={editCode}

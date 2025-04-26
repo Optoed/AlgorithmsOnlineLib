@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS algorithms (
                                           is_private  BOOLEAN DEFAULT FALSE,
                                           is_favorite BOOLEAN DEFAULT FALSE,
                                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                          description TEXT,
+                                          description TEXT NOT NULL DEFAULT '',
 
                                           category_id INTEGER REFERENCES categories(id),
                                           rating DOUBLE PRECISION DEFAULT 0.0,
