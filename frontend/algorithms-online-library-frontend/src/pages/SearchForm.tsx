@@ -84,7 +84,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ setAlgorithms }) => {
                     <input
                         type="text"
                         className="form-control"
-                        placeholder="UserID"
+                        placeholder="Author ID"
                         value={userID}
                         onChange={(e) => setUserID(e.target.value)}
                     />

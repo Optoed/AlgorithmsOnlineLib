@@ -22,6 +22,11 @@ func SetupRouters(router *mux.Router) {
 
 	protectedRoutes.HandleFunc("/available-programming-languages", handlers.GetAvailableProgrammingLanguages).Methods("GET")
 
+	// favorites algorithms
+	protectedRoutes.HandleFunc("/algorithms/favorite", handlers.GetFavoriteAlgorithms).Methods("GET")
+	protectedRoutes.HandleFunc("/algorithms/favorite/{id}", handlers.ChangeAlgorithmFavoriteStatus).
+		Methods("PATCH")
+
 	// algorithms
 	protectedRoutes.HandleFunc("/algorithms", handlers.CreateAlgorithm).Methods("POST")
 	protectedRoutes.HandleFunc("/algorithms/{id}", handlers.UpdateAlgorithm).Methods("PUT")
@@ -32,12 +37,7 @@ func SetupRouters(router *mux.Router) {
 	protectedRoutes.HandleFunc("/algorithms/{id}", handlers.GetAlgorithmByID).Methods("GET")
 	protectedRoutes.HandleFunc("/algorithms-by-user/{id}", handlers.GetAlgorithmsByUserID).Methods("GET")
 
-	// favorites algorithms
-	protectedRoutes.HandleFunc("/algorithms/favorite", handlers.GetFavoriteAlgorithms).Methods("GET")
-	protectedRoutes.HandleFunc("/algorithms/favorite/{id}", handlers.ChangeAlgorithmFavoriteStatus).
-		Methods("PATCH")
-
-	// rate algorithm TODO а нужен ли?
+	// rate algorithm
 	protectedRoutes.HandleFunc("/algorithms/rate/{id}", handlers.RateAlgorithm).Methods("POST")
 
 	// add / update / delete / get review for algorithm

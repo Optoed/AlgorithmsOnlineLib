@@ -4,7 +4,9 @@ import api from '../services/api'; // предполагаем, что axios н�
 import { Algorithm } from '../types/Algorithm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { ClipboardCopy, Edit, Trash2, EyeOff, Eye } from 'lucide-react';
+import { ClipboardCopy, Edit, Trash2, EyeOff, Eye, Star } from 'lucide-react';
+import { Heart } from 'lucide-react';
+import {Review} from "../types/Review";
 
 const AlgorithmPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -19,8 +21,14 @@ const AlgorithmPage: React.FC = () => {
     const [editProgrammingLanguage, setEditProgrammingLanguage] = useState('');
     const [editDescription, setEditDescription] = useState(''); // Добавляем состояние для описания
     const [deleteMessage, setDeleteMessage] = useState<string | null>(null); // Состояние для сообщения после удаления
+    const [isFavorite, setIsFavorite] = useState(false);
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
+
+    const [reviews, setReviews] = useState<Review[]>([]); // Состояние для отзывов
+    const [userReview, setUserReview] = useState<Review | null>(null); // Отзыв текущего пользователя
+    const [newReviewText, setNewReviewText] = useState(''); // Текст нового отзыва
+    const [newReviewRating, setNewReviewRating] = useState<number | null>(null); // Рейтинг нового отзыва
 
     useEffect(() => {
         const fetchAlgorithm = async () => {
@@ -143,6 +151,111 @@ const AlgorithmPage: React.FC = () => {
         }
     };
 
+    // Загрузка отзывов при монтировании компонента
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const response = await api.get(`/api/algorithms/review/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setReviews(response.data);
+
+                // Проверяем, есть ли отзыв от текущего пользователя
+                const userID = localStorage.getItem('userID');
+                if (userID) {
+                    const userRev = response.data.find((r: Review) => r.user_id === parseInt(userID));
+                    if (userRev) setUserReview(userRev);
+                }
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+            }
+        };
+
+        fetchReviews();
+    }, [id, token]);
+
+    // Обработчик отправки отзыва
+    const handleSubmitReview = async () => {
+        if (!newReviewText && !newReviewRating) {
+            alert('Please add text or rating');
+            return;
+        }
+
+        try {
+            const response = await api.post(
+                `/api/algorithms/review/${id}`,
+                {
+                    review_text: newReviewText,
+                    rating: newReviewRating,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            // Обновляем список отзывов
+            setReviews([...reviews, response.data]);
+            setUserReview(response.data);
+            setNewReviewText('');
+            setNewReviewRating(null);
+        } catch (error) {
+            console.error('Error submitting review:', error);
+        }
+    };
+
+    // Обработчик удаления отзыва
+    const handleDeleteReview = async (reviewId: number) => {
+        try {
+            await api.delete(`/api/algorithms/review/${reviewId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            // Обновляем список отзывов
+            setReviews(reviews.filter(r => r.id !== reviewId));
+            if (userReview?.id === reviewId) setUserReview(null);
+        } catch (error) {
+            console.error('Error deleting review:', error);
+        }
+    };
+
+    // Обработчик обновления отзыва
+    const handleUpdateReview = async () => {
+        if (!userReview) return;
+
+        try {
+            const updatedReview = {
+                review_text: newReviewText || userReview.review_text,
+                rating: newReviewRating || userReview.rating,
+            };
+
+            const response = await api.put(
+                `/api/algorithms/review/${userReview.id}`,
+                updatedReview,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            // Обновляем список отзывов
+            setReviews(reviews.map(r =>
+                r.id === userReview.id ? response.data : r
+            ));
+            setUserReview(response.data);
+            setNewReviewText('');
+            setNewReviewRating(null);
+        } catch (error) {
+            console.error('Error updating review:', error);
+        }
+    };
+
     if (!algorithm) {
         return <div className="text-center mt-5">Loading...</div>;
     }
@@ -155,7 +268,7 @@ const AlgorithmPage: React.FC = () => {
                     <strong>Topic:</strong> {algorithm.topic}
                 </p>
                 <p className="mb-3">
-                    <strong>Author:</strong> {algorithm.user_id}
+                    <strong>Author ID:</strong> {algorithm.user_id}
                 </p>
 
                 <div className="d-flex justify-content-between align-items-center mb-3">
@@ -232,6 +345,81 @@ const AlgorithmPage: React.FC = () => {
 
 
             </div>
+
+            {/* Секция отзывов */}
+            <div className="card shadow rounded-4 p-4 mt-4" style={{ maxWidth: '800px', width: '100%' }}>
+                <h4 className="mb-4">Reviews</h4>
+
+                {/* Форма для отзыва */}
+                <div className="mb-4">
+                    <h5>{userReview ? 'Edit your review' : 'Add a review'}</h5>
+                    <div className="mb-3">
+                        <label className="form-label">Rating (1-10)</label>
+                        <div className="d-flex">
+                            {[1, 2, 3, 4, 5].map(num => (
+                                <Star
+                                    key={num}
+                                    size={24}
+                                    className="me-1 cursor-pointer"
+                                    fill={newReviewRating ? (num <= newReviewRating ? 'gold' : 'none') :
+                                        (userReview?.rating ? (num <= userReview.rating ? 'gold' : 'none') : 'none')}
+                                    onClick={() => setNewReviewRating(num)}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                    <textarea
+                        className="form-control mb-3"
+                        rows={3}
+                        placeholder="Your review..."
+                        value={newReviewText}
+                        onChange={(e) => setNewReviewText(e.target.value)}
+                    />
+                    <button
+                        className="btn btn-primary"
+                        onClick={userReview ? handleUpdateReview : handleSubmitReview}
+                    >
+                        {userReview ? 'Update Review' : 'Submit Review'}
+                    </button>
+                    {userReview && (
+                        <button
+                            className="btn btn-danger ms-2"
+                            onClick={() => handleDeleteReview(userReview.id)}
+                        >
+                            Delete Review
+                        </button>
+                    )}
+                </div>
+
+                {/* Список отзывов */}
+                {reviews.length > 0 ? (
+                    <div className="mt-4">
+                        {reviews.map(review => (
+                            <div key={review.id} className="card mb-3 p-3">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <div className="d-flex align-items-center">
+                                        <strong className="me-2">User #{review.user_id}</strong>
+                                        {review.rating && (
+                                            <div className="d-flex align-items-center">
+                                                <Star size={16} fill="gold" className="me-1" />
+                                                <span>{review.rating}/5</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <small className="text-muted">
+                                        {new Date(review.created_at).toLocaleDateString()}
+                                    </small>
+                                </div>
+                                <p className="mb-0">{review.review_text}</p>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-muted">No reviews yet. Be the first to review!</p>
+                )}
+            </div>
+
+            {/* ... модальные окна и остальной код ... */}
 
             {/* Delete Confirmation */}
             {showConfirmDelete && (

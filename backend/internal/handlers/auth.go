@@ -119,7 +119,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Password = "" // Очищаем пароль перед возвратом данных пользователю
-	json.NewEncoder(w).Encode(map[string]string{"message": "Registration successful, please check your email to verify your account"})
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Registration successful, please check your email to verify your account",
+	})
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -151,7 +153,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expirationTime := time.Now().Add(time.Hour)
+	expirationTime := time.Now().Add(time.Hour * 3)
 	claims := &models.Claims{
 		Username: storedUser.Username,
 		UserID:   storedUser.ID,
