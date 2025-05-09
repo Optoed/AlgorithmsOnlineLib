@@ -133,6 +133,9 @@ func DeleteAlgorithm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Удаляем также из favorite у всех пользователей
+	database.DB.Exec(`DELETE FROM favorite WHERE algorithm_id = $1`, id)
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -430,18 +433,25 @@ func GetFavoriteAlgorithms(w http.ResponseWriter, r *http.Request) {
 	var myAlgorithms []models.Algorithm
 
 	userID, ok := r.Context().Value("userID").(int)
+
+	log.Println("userID (GetFavoriteAlgorithms) = ", userID)
+
 	if !ok {
 		http.Error(w, "Invalid userID", http.StatusBadRequest)
+		return
 	}
 
 	rows, err := database.DB.Query(
-		`SELECT id, title, code, user_id, topic, programming_language, is_private, description
-				FROM algorithms
-				WHERE user_id = $1 AND is_favorite = TRUE`,
+		`SELECT a.id, a.title, a.code, a.user_id, a.topic, a.programming_language, a.is_private, a.description
+				FROM algorithms a
+				INNER JOIN favorite f
+				ON a.id = f.algorithm_id 
+				WHERE f.user_id = $1 AND (a.is_private = FALSE OR a.user_id = $1)`,
 		userID)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	defer rows.Close()
 
@@ -459,6 +469,7 @@ func GetFavoriteAlgorithms(w http.ResponseWriter, r *http.Request) {
 		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		if algorithm.IsPrivate && algorithm.UserID != userID {
@@ -474,27 +485,19 @@ func ChangeAlgorithmFavoriteStatus(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	userId := r.Context().Value("userID").(int)
 
-	result, err := database.DB.Exec(
-		`UPDATE algorithms
-				SET is_favorite = NOT is_favorite
-				WHERE user_id = $1 AND id = $2`,
-		userId,
-		id)
+	log.Println("id = ", id)
+	log.Println("userID = ", userId)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	var exists bool
+	database.DB.QueryRow(
+		`SELECT EXISTS(SELECT 1 FROM favorite WHERE algorithm_id = $1 AND user_id = $2)`,
+		id,
+		userId).Scan(&exists)
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if rowsAffected == 0 {
-		http.Error(w, "Algorithm not found or not owned by the user", http.StatusNotFound)
-		return
+	if exists {
+		database.DB.Exec(`DELETE FROM favorite WHERE algorithm_id = $1 AND user_id = $2`, id, userId)
+	} else {
+		database.DB.Exec(`INSERT INTO favorite (algorithm_id, user_id) VALUES ($1, $2)`, id, userId)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

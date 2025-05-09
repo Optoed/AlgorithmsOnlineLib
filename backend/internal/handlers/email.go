@@ -57,7 +57,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Username == "" || user.Password == "" || user.Email == "" || user.Role == "" {
+	if user.Username == "" || user.Password == "" || user.Email == "" || user.Role != "admin" {
 		http.Error(w, "All fields (username, password, email, role) must be provided", http.StatusBadRequest)
 		return
 	}

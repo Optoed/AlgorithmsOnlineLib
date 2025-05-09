@@ -1,15 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchAlgorithms } from '../services/algorithmService';
+import { fetchAlgorithms, toggleFavorite } from '../services/algorithmService';
 import SearchForm from './SearchForm';
 import { Algorithm } from '../types/Algorithm';
 import { Spinner } from 'react-bootstrap';
+
 
 const HomePage: React.FC = () => {
     const [algorithms, setAlgorithms] = useState<Algorithm[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [updatingFavorites, setUpdatingFavorites] = useState<Record<number, boolean>>({});
     const token = localStorage.getItem('token');
+
+    const HeartIcon = ({ filled }: { filled: boolean }) => (
+        <span style={{ color: filled ? 'red' : 'gray' }}>
+            {filled ? '❤️' : '🤍'}
+        </span>
+    );
 
     useEffect(() => {
         const loadAlgorithms = async () => {
@@ -39,6 +47,28 @@ const HomePage: React.FC = () => {
 
         loadAlgorithms();
     }, [token]);
+
+    const handleToggleFavorite = async (algorithmId: number) => {
+        if (!token) return;
+
+        try {
+            setUpdatingFavorites(prev => ({ ...prev, [algorithmId]: true }));
+
+            const updatedAlgorithm = await toggleFavorite(algorithmId, token);
+
+            setAlgorithms(prev =>
+                prev.map(algo =>
+                    algo.id === algorithmId
+                        ? { ...algo, is_favorite: updatedAlgorithm.is_favorite }
+                        : algo
+                )
+            );
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+        } finally {
+            setUpdatingFavorites(prev => ({ ...prev, [algorithmId]: false }));
+        }
+    };
 
     if (loading) {
         return (
@@ -87,19 +117,33 @@ const HomePage: React.FC = () => {
             ) : (
                 <div className="list-group">
                     {algorithms.map((algorithm) => (
-                        <Link
-                            key={algorithm.id}
-                            to={`/algorithms/${algorithm.id}`}
-                            className="list-group-item list-group-item-action py-3"
-                        >
+                        <div key={algorithm.id} className="list-group-item list-group-item-action py-3">
                             <div className="d-flex justify-content-between align-items-center">
-                                <h5 className="mb-1">{algorithm.title}</h5>
-                                <span className="badge bg-primary">
-                                    {algorithm.programming_language}
-                                </span>
+                                <Link to={`/algorithms/${algorithm.id}`} className="flex-grow-1 text-decoration-none">
+                                    <h5 className="mb-1 text-dark">{algorithm.title}</h5>
+                                </Link>
+                                <div className="d-flex align-items-center">
+                                    <span className="badge bg-primary me-2">
+                                        {algorithm.programming_language}
+                                    </span>
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleToggleFavorite(algorithm.id);
+                                        }}
+                                        disabled={updatingFavorites[algorithm.id]}
+                                        className="btn btn-link p-0 border-0"
+                                    >
+                                        <HeartIcon filled={algorithm.is_favorite}/>
+                                        {updatingFavorites[algorithm.id] && (
+                                            <span className="visually-hidden">Updating...</span>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
+                            <div><small className="text-muted">Topic: {algorithm.topic}</small></div>
                             <small className="text-muted">Author ID: {algorithm.user_id}</small>
-                        </Link>
+                        </div>
                     ))}
                 </div>
             )}

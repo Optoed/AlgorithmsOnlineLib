@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import MyAlgorithmsPage from './pages/MyAlgorithmsPage';
 import AddAlgorithmPage from "./pages/AddAlgorithmPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import FavoriteAlgorithmsPage from "./pages/FavoriteAlgorithmsPage";
 
 const App: React.FC = () => {
     // Проверяем, есть ли токен (например, в localStorage)
@@ -91,6 +92,16 @@ const App: React.FC = () => {
                             ) : (
                                 <Navigate to="/login" replace />
                             )}
+                        />
+                        <Route
+                            path="/favorite-algorithms"
+                            element={
+                                hasToken() ? (
+                                    <FavoriteAlgorithmsPage />
+                                ) : (
+                                    <Navigate to="/login" replace />
+                                )
+                            }
                         />
                         <Route
                             path="/add-algorithm"

@@ -59,3 +59,21 @@ export const deleteAlgorithm = async (id: string) => {
         throw error;
     }
 };
+
+export const toggleFavorite = async (algorithmId: number, token: any) => {
+    try {
+        const response = await api.patch(
+            `api/algorithms/favorite/${algorithmId}`,
+            {},  // Пустое тело запроса
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error toggle favorite status', error);
+        throw error;
+    }
+};

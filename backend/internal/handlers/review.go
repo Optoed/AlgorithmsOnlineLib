@@ -86,6 +86,7 @@ func AddReview(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError) // TODO или StatusBadRequest
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -176,6 +177,7 @@ func GetReviewsByAlgorithmID(w http.ResponseWriter, r *http.Request) {
 		algorithmID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	defer rows.Close()
 
@@ -183,14 +185,15 @@ func GetReviewsByAlgorithmID(w http.ResponseWriter, r *http.Request) {
 		var review models.Review
 		err = rows.Scan(
 			&review.ID,
+			&review.UserID,
 			&review.ReviewText,
 			&review.Rating,
-			&review.UserID,
 			&review.CreatedAt,
 			&review.UpdatedAt,
 		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		reviews = append(reviews, review)
