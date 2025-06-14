@@ -160,7 +160,7 @@ const AlgorithmPage: React.FC = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setReviews(response.data);
+                setReviews(response.data || []);
 
                 // Проверяем, есть ли отзыв от текущего пользователя
                 const userID = localStorage.getItem('userID');
@@ -170,6 +170,7 @@ const AlgorithmPage: React.FC = () => {
                 }
             } catch (error) {
                 console.error('Error fetching reviews:', error);
+                setReviews([]); // Set to empty array on error
             }
         };
 
@@ -184,9 +185,19 @@ const AlgorithmPage: React.FC = () => {
         }
 
         try {
+            console.log("id (submit review) = ", id)
+
+            const algorithmID = parseInt(id || '')
+
+            // Проверяем, что преобразование прошло успешно
+            if (isNaN(algorithmID)) {
+                throw new Error('Invalid algorithm ID');
+            }
+
             const response = await api.post(
                 `/api/algorithms/review/${id}`,
                 {
+                    algorithm_id: algorithmID,
                     review_text: newReviewText,
                     rating: newReviewRating,
                 },
@@ -392,7 +403,7 @@ const AlgorithmPage: React.FC = () => {
                 </div>
 
                 {/* Список отзывов */}
-                {reviews.length > 0 ? (
+                {reviews && reviews.length > 0 ? (
                     <div className="mt-4">
                         {reviews.map(review => (
                             <div key={review.id} className="card mb-3 p-3">
